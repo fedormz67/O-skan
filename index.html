@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#101211">
   <title>O-Skan — Сканер знаков спортивного ориентирования</title>
   <style>
-    /* ПРИРОДНАЯ ТАКТИЛЬНАЯ ПАЛИТРА КАРТОГРАФА */
     :root {
       --bg-canvas: #101211;
       --card-bg: #171c18;
@@ -51,7 +50,10 @@
     header {
       padding: 12px 0 16px;
       border-bottom: 1px solid var(--card-border);
-      margin-bottom: 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .brand {
@@ -61,37 +63,52 @@
     }
 
     .logo-badge {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       background: var(--contour-ochre);
       clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-shrink: 0;
     }
 
     .brand-title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
-      letter-spacing: 0.5px;
       color: #ffffff;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .brand-subtitle {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      margin-top: 3px;
     }
 
-    /* ПОДСКАЗКИ ДЛЯ СЪЕМКИ */
+    .btn-changelog {
+      background-color: #212822;
+      border: 1px solid var(--card-border);
+      color: var(--contour-ochre);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-changelog:active {
+      transform: scale(0.96);
+    }
+
+    /* ПОДСКАЗКА С ПРИЦЕЛОМ */
     .tips-box {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-left: 3px solid var(--forest-green);
+      border-left: 3px solid var(--contour-ochre);
       border-radius: var(--border-radius);
-      padding: 12px 14px;
-      margin-bottom: 18px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
       font-size: 13px;
       color: var(--text-muted);
     }
@@ -102,16 +119,13 @@
       align-items: center;
       gap: 6px;
     }
+    .tips-box p:last-child { margin-bottom: 0; }
 
-    .tips-box p:last-child {
-      margin-bottom: 0;
-    }
-
-    /* ПРЕДПРОСМОТР ФОТО */
+    /* ОБЛАСТЬ ФОТО И ПРИЦЕЛА */
     .preview-wrapper {
       position: relative;
       width: 100%;
-      height: 220px;
+      min-height: 240px;
       background-color: var(--card-bg);
       border: 2px dashed var(--card-border);
       border-radius: var(--border-radius);
@@ -120,16 +134,20 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 16px;
+      user-select: none;
+      touch-action: pan-y;
     }
 
     .preview-wrapper.active {
       border-style: solid;
       border-color: var(--forest-green);
+      cursor: crosshair;
     }
 
     .preview-img {
       width: 100%;
-      height: 100%;
+      height: auto;
+      max-height: 420px;
       object-fit: contain;
       display: none;
     }
@@ -141,202 +159,203 @@
       padding: 0 16px;
     }
 
-    /* КНОПКИ ДЕЙСТВИЯ */
+    /* ПРИЦЕЛ-МИШЕНЬ */
+    .reticle-marker {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border: 2px solid #ff9800;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(255, 152, 0, 0.75);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+      animation: pulse-reticle 1.5s infinite ease-in-out;
+      z-index: 10;
+    }
+
+    .reticle-marker::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 6px;
+      height: 6px;
+      background-color: #ff9800;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes pulse-reticle {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.12); }
+    }
+
+    /* КНОПКИ */
     .btn-group {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .btn {
       width: 100%;
-      min-height: 52px;
+      min-height: 50px;
       border: none;
       border-radius: var(--border-radius);
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      font-size: 15px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      user-select: none;
-      transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.05s ease;
+      transition: 0.15s;
     }
 
-    .btn:active {
-      transform: scale(0.985);
-    }
+    .btn:active { transform: scale(0.985); }
+    .btn-upload { background-color: #212822; color: var(--text-main); border: 1px solid var(--card-border); }
+    .btn-submit { background-color: var(--forest-green); color: #ffffff; }
+    .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
-    .btn-upload {
-      background-color: #212822;
-      color: var(--text-main);
-      border: 1px solid var(--card-border);
-    }
+    #camera-input { display: none; }
 
-    .btn-submit {
-      background-color: var(--forest-green);
-      color: #ffffff;
-    }
+    /* КАРТОЧКИ РЕЗУЛЬТАТОВ */
+    #result-box { margin-bottom: 24px; display: none; }
+    .alert-banner { padding: 12px 14px; border-radius: var(--border-radius); font-size: 13.5px; font-weight: 600; margin-bottom: 12px; }
+    .alert-doubt { background: rgba(217, 119, 6, 0.18); border: 1px solid var(--status-warning); color: #fbbf24; }
+    .alert-error { background: rgba(220, 38, 38, 0.18); border: 1px solid var(--status-disqual); color: #f87171; }
 
-    .btn-submit:hover {
-      background-color: var(--forest-green-hover);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* СКРЫТЫЙ INPUT ДЛЯ КАМЕРЫ */
-    #camera-input {
-      display: none;
-    }
-
-    /* РЕЗУЛЬТАТЫ РАСПОЗНАВАНИЯ */
-    #result-box {
-      margin-bottom: 24px;
-      display: none;
-    }
-
-    .alert-banner {
-      padding: 12px 14px;
-      border-radius: var(--border-radius);
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-
-    .alert-doubt {
-      background-color: rgba(217, 119, 6, 0.15);
-      border: 1px solid var(--status-warning);
-      color: #fbbf24;
-    }
-
-    .alert-error {
-      background-color: rgba(220, 38, 38, 0.15);
-      border: 1px solid var(--status-disqual);
-      color: #f87171;
-    }
-
-    .doubt-reason {
-      font-size: 13px;
-      font-weight: 400;
-      margin-top: 4px;
-      color: var(--text-main);
-    }
-
-    /* КАРТОЧКА ЗНАКА */
     .symbol-card {
       background-color: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--border-radius);
       padding: 16px;
       margin-bottom: 12px;
-      position: relative;
     }
-
-    /* ОСОБАЯ РАМКА: ДИСКВАЛИФИКАЦИЯ */
     .symbol-card.disqual {
       border: 2px solid var(--status-disqual);
       background-color: #1c1414;
     }
-
     .disqual-badge {
       display: inline-block;
-      background-color: var(--status-disqual);
-      color: #ffffff;
+      background: var(--status-disqual);
+      color: #fff;
       font-size: 11px;
       font-weight: 800;
-      text-transform: uppercase;
-      padding: 5px 9px;
+      padding: 4px 8px;
       border-radius: 4px;
-      margin-bottom: 10px;
-      letter-spacing: 0.4px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
       margin-bottom: 8px;
     }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .symbol-name { font-size: 16.5px; font-weight: 700; color: #fff; flex: 1; }
+    .symbol-standard { font-size: 11px; background: #212822; color: var(--text-muted); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--card-border); margin-left: 8px; }
+    .card-detail { margin-top: 8px; font-size: 13px; }
+    .detail-label { color: var(--contour-ochre); font-size: 11px; font-weight: 700; text-transform: uppercase; display: block; }
+    .detail-text { color: var(--text-main); }
 
-    .symbol-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: #ffffff;
-      flex: 1;
+    /* МОДАЛКА ЧЕНДЖЛОГА */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
     }
-
-    .symbol-standard {
-      font-size: 11px;
-      background-color: #212822;
-      color: var(--text-muted);
-      padding: 3px 6px;
-      border-radius: 4px;
+    .modal-card {
+      background: #151816;
       border: 1px solid var(--card-border);
-      white-space: nowrap;
-      margin-left: 8px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .btn-close {
+      background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px;
+    }
+    .modal-content {
+      padding: 16px;
+      overflow-y: auto;
+      font-size: 13px;
     }
 
-    .card-detail {
-      margin-top: 10px;
-      font-size: 13.5px;
-    }
-
-    .detail-label {
-      color: var(--contour-ochre);
+    .changelog-section-title {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
-      display: block;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .title-planned { color: var(--status-warning); }
+    .title-released { color: #4ade80; margin-top: 18px; }
+
+    .version-item {
+      background: #1c221e;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .version-item:last-child { margin-bottom: 0; }
+    .version-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+    }
+    .version-header .badge {
+      font-size: 11px;
+      background: #252e27;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+    .version-block-title {
+      font-weight: 600;
+      color: var(--contour-ochre);
+      margin-top: 4px;
       margin-bottom: 2px;
     }
-
-    .detail-text {
+    .version-list {
+      list-style: none;
+      padding-left: 2px;
       color: var(--text-main);
     }
+    .version-list li { margin-bottom: 2px; }
 
-    /* СКРЫТЫЙ CANVAS ДЛЯ ОПТИМИЗАЦИИ */
-    #compress-canvas {
-      display: none;
-    }
-
-    /* ФУТЕР И АВТОРСТВО */
     footer {
       text-align: right;
       padding-top: 14px;
       margin-top: auto;
     }
-
-    .author-credit {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      opacity: 0.45;
-      letter-spacing: 0.2px;
-    }
-
-    .author-link {
-      cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      transition: opacity 0.2s, color 0.2s;
-    }
-
-    .author-link:active {
-      opacity: 0.9;
-    }
+    .author-credit { font-size: 11.5px; color: var(--text-muted); opacity: 0.45; }
+    .author-link { cursor: pointer; text-decoration: underline; }
+    canvas { display: none; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Шапка -->
     <header>
       <div class="brand">
         <div class="logo-badge"></div>
@@ -345,48 +364,106 @@
           <div class="brand-subtitle">Карманный сканер знаков IOF / БФО</div>
         </div>
       </div>
+      <button class="btn-changelog" id="open-changelog">📋 Обновления</button>
     </header>
 
-    <!-- Подсказки съемки -->
     <div class="tips-box">
+      <p>🎯 <strong>Тапни пальцем по карте</strong>, чтобы навести прицел на нужный знак</p>
       <p>💡 Снимайте перпендикулярно, без бликов пакета</p>
-      <p>💡 Захватывайте 1–2 см соседней карты для масштаба</p>
     </div>
 
-    <!-- Область предпросмотра -->
+    <!-- Область фото с прицелом -->
     <div class="preview-wrapper" id="preview-container">
       <span class="placeholder-text" id="placeholder-text">Фото карты еще не выбрано</span>
       <img id="preview-image" class="preview-img" alt="Предпросмотр знака">
+      <div class="reticle-marker" id="reticle"></div>
     </div>
 
-    <!-- Кнопки управления -->
     <div class="btn-group">
       <input type="file" id="camera-input" accept="image/*" capture="environment">
       <button type="button" class="btn btn-upload" id="btn-pick">
         📷 Сфотографировать / Загрузить
       </button>
-
       <button type="button" class="btn btn-submit" id="btn-scan" disabled>
         Определить знак
       </button>
     </div>
 
-    <!-- Блок результатов -->
     <div id="result-box"></div>
   </div>
 
-  <!-- Футер с копированием автора -->
+  <!-- ======================================================== -->
+  <!-- 👇 ЗОНА РЕДАКТИРОВАНИЯ ЧЕНДЖЛОГА: МЕНЯЙ ТЕКСТ ЗДЕСЬ 👇 -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="modal-changelog">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Список обновлений O-Skan</div>
+        <button class="btn-close" id="close-changelog">✕</button>
+      </div>
+      <div class="modal-content">
+
+        <!-- РАЗДЕЛ 1: ПЛАНИРУЕМОЕ -->
+        <div class="changelog-section-title title-planned">🟡 В разработке (Планируется)</div>
+        <div class="version-item">
+          <p style="color: var(--text-muted); font-style: italic;">Пока ничего не запланировано.</p>
+        </div>
+
+        <!-- РАЗДЕЛ 2: ИСТОРИЯ ВЕРСИЙ -->
+        <div class="changelog-section-title title-released">🟢 История версий</div>
+
+        <!-- Версия 1.2.0 -->
+        <div class="version-item">
+          <div class="version-header">
+            <span>v1.2.0</span>
+            <span class="badge">7 ноября</span>
+          </div>
+          <div class="version-block-title">Добавлено:</div>
+          <ul class="version-list">
+            <li>• список обновлений</li>
+            <li>• интерактивный прицел (выделение нужного объекта пальцем на сложной карте)</li>
+          </ul>
+        </div>
+
+        <!-- Версия 1.0.1 -->
+        <div class="version-item">
+          <div class="version-header">
+            <span>v1.0.1</span>
+            <span class="badge">6 ноября</span>
+          </div>
+          <div class="version-block-title">Исправлено:</div>
+          <ul class="version-list">
+            <li>• исправления в коде, подключение актуальной модели</li>
+          </ul>
+        </div>
+
+        <!-- Версия 1.0.0 -->
+        <div class="version-item">
+          <div class="version-header">
+            <span>v1.0.0</span>
+            <span class="badge">6 ноября</span>
+          </div>
+          <ul class="version-list">
+            <li>• Нулевой релиз, запуск O-Skan</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- ======================================================== -->
+  <!-- 👆 КОНЕЦ ЗОНЫ РЕДАКТИРОВАНИЯ ЧЕНДЖЛОГА 👆 -->
+  <!-- ======================================================== -->
+
   <footer>
     <div class="author-credit">
-      created by fedormz • <span class="author-link" id="tg-copy" role="button">@fedormz</span>
+      created by fedormz • <span class="author-link" id="tg-copy">@fedormz</span>
     </div>
   </footer>
 
-  <!-- Скрытый Canvas для компрессии -->
   <canvas id="compress-canvas"></canvas>
 
   <script>
-    // Инициализация элементов
     const cameraInput = document.getElementById('camera-input');
     const btnPick = document.getElementById('btn-pick');
     const btnScan = document.getElementById('btn-scan');
@@ -396,16 +473,23 @@
     const resultBox = document.getElementById('result-box');
     const compressCanvas = document.getElementById('compress-canvas');
     const tgCopyBtn = document.getElementById('tg-copy');
+    const reticle = document.getElementById('reticle');
 
-    let compressedBase64 = null;
+    // Модалка
+    const modalChangelog = document.getElementById('modal-changelog');
+    const btnOpenChangelog = document.getElementById('open-changelog');
+    const btnCloseChangelog = document.getElementById('close-changelog');
 
-    // Вызов камеры
-    btnPick.addEventListener('click', () => {
-      cameraInput.click();
-    });
+    btnOpenChangelog.onclick = () => modalChangelog.style.display = 'flex';
+    btnCloseChangelog.onclick = () => modalChangelog.style.display = 'none';
+    modalChangelog.onclick = (e) => { if (e.target === modalChangelog) modalChangelog.style.display = 'none'; };
 
-    // Обработка выбора файла с компрессией Canvas до 600x600 (JPEG 0.8)
-    cameraInput.addEventListener('change', (e) => {
+    let loadedImage = null;
+    let targetCoords = null; // { normX, normY }
+
+    btnPick.onclick = () => cameraInput.click();
+
+    cameraInput.onchange = (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
 
@@ -413,80 +497,112 @@
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          const MAX_SIZE = 600;
-          let width = img.width;
-          let height = img.height;
+          loadedImage = img;
+          targetCoords = null; // сброс прицела
+          reticle.style.display = 'none';
 
-          // Масштабирование с сохранением пропорций
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height = Math.round((height * MAX_SIZE) / width);
-              width = MAX_SIZE;
-            }
-          } else {
-            if (height > MAX_SIZE) {
-              width = Math.round((width * MAX_SIZE) / height);
-              height = MAX_SIZE;
-            }
-          }
-
-          compressCanvas.width = width;
-          compressCanvas.height = height;
-
-          const ctx = compressCanvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Получаем оптимизированный JPEG 0.8
-          compressedBase64 = compressCanvas.toDataURL('image/jpeg', 0.8);
-
-          // Отображение предпросмотра
-          previewImage.src = compressedBase64;
+          previewImage.src = event.target.result;
           previewImage.style.display = 'block';
           placeholderText.style.display = 'none';
           previewContainer.classList.add('active');
 
-          // Активируем кнопку отправки и скрываем прошлый результат
           btnScan.disabled = false;
           resultBox.style.display = 'none';
-          resultBox.innerHTML = '';
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(file);
+    };
+
+    // Тап пальцем по карте -> установка прицела
+    previewContainer.addEventListener('click', (e) => {
+      if (!loadedImage) return;
+
+      const rect = previewImage.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (clickX < 0 || clickX > rect.width || clickY < 0 || clickY > rect.height) return;
+
+      targetCoords = {
+        normX: clickX / rect.width,
+        normY: clickY / rect.height
+      };
+
+      // Рисуем прицел на экране
+      const containerRect = previewContainer.getBoundingClientRect();
+      reticle.style.left = (e.clientX - containerRect.left) + 'px';
+      reticle.style.top = (e.clientY - containerRect.top) + 'px';
+      reticle.style.display = 'block';
     });
 
-    // Отправка в serverless-функцию /api/check
-    btnScan.addEventListener('click', async () => {
-      if (!compressedBase64) return;
+    btnScan.onclick = async () => {
+      if (!loadedImage) return;
 
       btnScan.disabled = true;
       btnScan.textContent = 'Распознавание знака...';
       resultBox.style.display = 'none';
-      resultBox.innerHTML = '';
 
       try {
+        // Сжатие + рисование прицела на канвасе
+        const MAX_SIZE = 640;
+        let w = loadedImage.width;
+        let h = loadedImage.height;
+
+        if (w > h) {
+          if (w > MAX_SIZE) { h = Math.round((h * MAX_SIZE) / w); w = MAX_SIZE; }
+        } else {
+          if (h > MAX_SIZE) { w = Math.round((w * MAX_SIZE) / h); h = MAX_SIZE; }
+        }
+
+        compressCanvas.width = w;
+        compressCanvas.height = h;
+        const ctx = compressCanvas.getContext('2d');
+        ctx.drawImage(loadedImage, 0, 0, w, h);
+
+        // Если есть прицел — впечатываем оранжевую мишень
+        if (targetCoords) {
+          const tx = targetCoords.normX * w;
+          const ty = targetCoords.normY * h;
+
+          ctx.strokeStyle = '#ff9800';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(tx, ty, 32, 0, 2 * Math.PI);
+          ctx.stroke();
+
+          ctx.fillStyle = '#ff9800';
+          ctx.beginPath();
+          ctx.arc(tx, ty, 4, 0, 2 * Math.PI);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(tx - 44, ty); ctx.lineTo(tx - 34, ty);
+          ctx.moveTo(tx + 34, ty); ctx.lineTo(tx + 44, ty);
+          ctx.moveTo(tx, ty - 44); ctx.lineTo(tx, ty - 34);
+          ctx.moveTo(tx, ty + 34); ctx.lineTo(tx, ty + 44);
+          ctx.stroke();
+        }
+
+        const compressedBase64 = compressCanvas.toDataURL('image/jpeg', 0.8);
+
         const response = await fetch('/api/check', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: compressedBase64 })
         });
 
-        if (!response.ok) {
-          throw new Error('Сетевая ошибка или сбой API');
-        }
-
         const data = await response.json();
         renderResults(data);
       } catch (err) {
         console.error(err);
-        renderError('❌ Не удалось связаться с сервером. Проверьте интернет-соединение.');
+        renderError('❌ Не удалось связаться с сервером. Попробуйте еще раз.');
       } finally {
         btnScan.disabled = false;
         btnScan.textContent = 'Определить знак';
       }
-    });
+    };
 
-    // Отрисовка структуры карточек
     function renderResults(data) {
       resultBox.innerHTML = '';
       resultBox.style.display = 'block';
@@ -499,10 +615,7 @@
       if (data.status === 'doubt') {
         const warnBanner = document.createElement('div');
         warnBanner.className = 'alert-banner alert-doubt';
-        warnBanner.innerHTML = `
-          ⚠️ Знак спорный. Возможны два варианта:
-          ${data.doubt_reason ? `<div class="doubt-reason">${escapeHtml(data.doubt_reason)}</div>` : ''}
-        `;
+        warnBanner.innerHTML = `⚠️ Знак спорный. Возможны два варианта: ${data.doubt_reason ? `<div style="font-weight:400;margin-top:4px;">${escapeHtml(data.doubt_reason)}</div>` : ''}`;
         resultBox.appendChild(warnBanner);
       }
 
@@ -534,75 +647,28 @@
           resultBox.appendChild(card);
         });
       }
-
-      // Плавная прокрутка к результатам на мобильном экране
       resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function renderError(message) {
-      resultBox.innerHTML = `
-        <div class="alert-banner alert-error">
-          ${escapeHtml(message)}
-        </div>
-      `;
+      resultBox.innerHTML = `<div class="alert-banner alert-error">${escapeHtml(message)}</div>`;
       resultBox.style.display = 'block';
       resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Санитизация строк
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
-    // Логика копирования @fedormz
-    tgCopyBtn.addEventListener('click', async () => {
-      const handleCopySuccess = () => {
-        const originalText = '@fedormz';
-        tgCopyBtn.textContent = 'скопировано! ✓';
-        tgCopyBtn.style.opacity = '1';
-        tgCopyBtn.style.color = '#ffffff';
-
-        setTimeout(() => {
-          tgCopyBtn.textContent = originalText;
-          tgCopyBtn.style.opacity = '';
-          tgCopyBtn.style.color = '';
-        }, 1500);
-      };
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-          await navigator.clipboard.writeText('@fedormz');
-          handleCopySuccess();
-        } catch (e) {
-          fallbackCopyText('@fedormz', handleCopySuccess);
-        }
-      } else {
-        fallbackCopyText('@fedormz', handleCopySuccess);
-      }
-    });
-
-    function fallbackCopyText(text, callback) {
-      const tempInput = document.createElement('textarea');
-      tempInput.value = text;
-      tempInput.style.position = 'fixed';
-      tempInput.style.opacity = '0';
-      document.body.appendChild(tempInput);
-      tempInput.focus();
-      tempInput.select();
+    tgCopyBtn.onclick = async () => {
       try {
-        document.execCommand('copy');
-        if (callback) callback();
-      } catch (err) {
-        console.error('Fallback clipboard error', err);
-      }
-      document.body.removeChild(tempInput);
-    }
+        await navigator.clipboard.writeText('@fedormz');
+        const orig = '@fedormz';
+        tgCopyBtn.textContent = 'скопировано! ✓';
+        setTimeout(() => { tgCopyBtn.textContent = orig; }, 1500);
+      } catch (e) {}
+    };
   </script>
 </body>
 </html>
