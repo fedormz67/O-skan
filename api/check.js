@@ -1,7 +1,7 @@
 // api/check.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({
+    return res.status(200).json({
       status: 'error',
       error_message: 'Метод не поддерживается. Используйте POST.'
     });
@@ -9,16 +9,16 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({
+    return res.status(200).json({
       status: 'error',
-      error_message: 'Серверная ошибка: Не настроен GEMINI_API_KEY в переменных окружения.'
+      error_message: 'Серверная ошибка: Не найден GEMINI_API_KEY в Vercel.'
     });
   }
 
   try {
     const { image } = req.body || {};
     if (!image) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: 'error',
         error_message: 'Изображение не получено клиентом.'
       });
@@ -72,16 +72,19 @@ export default async function handler(req, res) {
 
 ЛОГИКА ОПРЕДЕЛЕНИЯ:
 - Если уверен на 100%: status="exact", symbols содержит ровно 1 объект.
-- Если фото спорное или знак допускает двоякое толкование: status="doubt", doubt_reason объясняет, на что атлету смотреть (толщина, шаг точек, оттенок), symbols содержит ровно 2 объекта-кандидата.
-- Если фото смазано, не относится к карте, нет знака: status="error", symbols=[], error_message="❌ Знак не распознан. Сделайте четкий снимок без бликов".
+- Если фото спорное: status="doubt", doubt_reason объясняет, на что смотреть, symbols содержит ровно 2 объекта.
+- Если фото смазано или не относится к карте: status="error", symbols=[], error_message="❌ Знак не распознан. Сделайте четкий снимок без бликов".
 `;
 
-    // Вызов Gemini
+    // Вызов Gemini с заголовком x-goog-api-key для поддержки ключей AQ.
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey.trim()
+        },
         body: JSON.stringify({
           contents: [
             {
@@ -105,11 +108,11 @@ export default async function handler(req, res) {
     );
 
     if (!response.ok) {
-      const errBody = await response.text();
-      console.error('Gemini API Error:', errBody);
-      return res.status(response.status).json({
+      const errText = await response.text();
+      console.error('Gemini Error:', errText);
+      return res.status(200).json({
         status: 'error',
-        error_message: 'Ошибка распознавания сервисом Gemini. Повторите попытку.'
+        error_message: `Ошибка Google API (${response.status}): Проверьте ключ или модель.`
       });
     }
 
@@ -117,20 +120,21 @@ export default async function handler(req, res) {
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawText) {
-      return res.status(500).json({
+      return res.status(200).json({
         status: 'error',
         error_message: 'Пустой ответ от нейросети.'
       });
     }
 
-    const parsedResult = JSON.parse(rawText.trim());
+    const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const parsedResult = JSON.parse(cleanJson);
     return res.status(200).json(parsedResult);
 
   } catch (error) {
-    console.error('API Handler Error:', error);
-    return res.status(500).json({
+    console.error('API Error:', error);
+    return res.status(200).json({
       status: 'error',
-      error_message: 'Внутренняя ошибка сервера: ' + error.message
+      error_message: 'Внутренняя ошибка: ' + error.message
     });
   }
 }
